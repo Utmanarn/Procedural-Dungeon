@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 361838875}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -260,7 +260,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &361838876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,6 +274,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackCooldown: 0.7
+  damage: 1
   attackPoint: {fileID: 839696180}
 --- !u!1 &519420028
 GameObject:
@@ -530,7 +531,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &1962198861
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -610,3 +611,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01c43d6222f9afe4d9f8b111332dd656, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetingDistance: 2
+  movementSpeed: 4
