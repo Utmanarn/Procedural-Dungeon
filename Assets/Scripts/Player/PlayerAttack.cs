@@ -27,7 +27,7 @@ public class PlayerAttack : MonoBehaviour
             if (detectedCollider.TryGetComponent(out Enemy enemy))
             {
                 Debug.Log("Enemy hit.");
-                // enemy.TakeDamage(damage);
+                enemy.TakeDamage(damage);
             }
         }
     }
