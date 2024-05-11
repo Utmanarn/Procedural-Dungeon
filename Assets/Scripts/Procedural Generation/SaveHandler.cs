@@ -6,16 +6,19 @@ using System;
 public class SaveHandler : MonoBehaviour
 {
     private Dictionary<string, Tilemap> _tilemaps = new Dictionary<string, Tilemap>();
-    [SerializeField] private BoundsInt bounds;
+    [SerializeField] private BoundsInt bounds; // Bounds for the rooms default would be pos -5, -5 and size 11, 11.
     [SerializeField] private string fileName;
     [SerializeField] private bool saveOnStart = false;
+    [SerializeField] private bool loadOnStart = false;
 
     private void Start()
     {
         InitTilemaps();
         if (saveOnStart) OnSave();
+        else if (loadOnStart) OnLoad();
 
         saveOnStart = false;
+        loadOnStart = false;
     }
 
     private void InitTilemaps()
@@ -64,7 +67,42 @@ public class SaveHandler : MonoBehaviour
 
     private void OnLoad()
     {
-        
+        List<TilemapData> data = FileHandler.ReadListFromJSON<TilemapData>(fileName);
+
+        foreach (var mapData in data)
+        {
+            if (!_tilemaps.ContainsKey(mapData.key))
+            {
+                Debug.LogError("Failed to get tilemap data for " + mapData.key);
+                continue;
+            }
+
+            var map = _tilemaps[mapData.key];
+            
+            map.ClearAllTiles();
+
+            if (mapData.tiles != null && mapData.tiles.Count > 0)
+            {
+                foreach (TileInfo tile in mapData.tiles)
+                {
+                    TileBase tileBase = tile.tile;
+
+                    if (tileBase == null)
+                    {
+                        Debug.Log("[Loading Tilemap]: InstanceID not found - looking in AssetDatabase");
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(tile.guid);
+                        tileBase = UnityEditor.AssetDatabase.LoadAssetAtPath<TileBase>(path);
+
+                        if (tileBase == null)
+                        {
+                            Debug.LogError("[Loading Tilemap]: Tile not found in AssetDatabase");
+                            continue;
+                        }
+                    }
+                    map.SetTile(tile.position, tileBase);
+                }
+            }
+        }
     }
 }
 
