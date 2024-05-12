@@ -11,11 +11,13 @@ public class SaveHandler : MonoBehaviour
     [SerializeField] private bool saveOnStart = false;
     [SerializeField] private bool loadOnStart = false;
 
+    private int xOffset, yOffset; // Every offset should be set by 11.
+
     private void Start()
     {
         InitTilemaps();
         if (saveOnStart) OnSave();
-        else if (loadOnStart) OnLoad();
+        else if (loadOnStart) OnLoad(fileName); // For now we just load the fileName, in the future we will load multiple different files to fill out the levels.
 
         saveOnStart = false;
         loadOnStart = false;
@@ -27,6 +29,7 @@ public class SaveHandler : MonoBehaviour
 
         foreach (Tilemap map in maps)
         {
+            map.ClearAllTiles(); // We clear all of the tilemaps on start to avoid loading over anything currently placed on the maps.
             _tilemaps.Add(map.name, map);
         }
     }
@@ -65,9 +68,15 @@ public class SaveHandler : MonoBehaviour
         FileHandler.SaveToJSON<TilemapData>(data, fileName);
     }
 
-    private void OnLoad()
+    public void SetOffsetValues(int x, int y)
     {
-        List<TilemapData> data = FileHandler.ReadListFromJSON<TilemapData>(fileName);
+        xOffset = x;
+        yOffset = y;
+    }
+    
+    public void OnLoad(string loadFileName)
+    {
+        List<TilemapData> data = FileHandler.ReadListFromJSON<TilemapData>(loadFileName);
 
         foreach (var mapData in data)
         {
@@ -78,8 +87,6 @@ public class SaveHandler : MonoBehaviour
             }
 
             var map = _tilemaps[mapData.key];
-            
-            map.ClearAllTiles();
 
             if (mapData.tiles != null && mapData.tiles.Count > 0)
             {
@@ -99,6 +106,8 @@ public class SaveHandler : MonoBehaviour
                             continue;
                         }
                     }
+
+                    tile.position += new Vector3Int(xOffset, yOffset, 0); // Offsetting tiles like this works. Now it needs a system to correctly offset the tiles for each room.
                     map.SetTile(tile.position, tileBase);
                 }
             }

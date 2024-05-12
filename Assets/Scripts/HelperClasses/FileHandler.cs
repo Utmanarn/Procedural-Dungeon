@@ -28,7 +28,7 @@ public static class FileHandler
 
     private static string GetPath(string filename)
     {
-        return UnityEngine.Application.persistentDataPath + "/" + filename;
+        return Application.dataPath + "/Rooms/" + filename;
     }
     
     private static void WriteFile(string path, string content)
