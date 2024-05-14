@@ -5,16 +5,28 @@ using UnityEngine;
 
 public static class FileHandler
 {
-    public static void SaveToJSON<T>(List<T> toSave, string filename)
+    public static void SaveToJSON<T>(List<T> toSave, string fileName)
     {
-        Debug.Log(GetPath(filename));
+        Debug.Log(GetPath(fileName));
         string content = JsonHelper.ToJson<T>(toSave.ToArray());
-        WriteFile(GetPath(filename), content);
+        WriteFile(GetPath(fileName), content);
     }
 
-    public static List<T> ReadListFromJSON<T>(string filename)
+    public static void SaveToJSON<T>(T toSave, string fileName)
     {
-        string content = ReadFile(GetPath(filename));
+        Debug.Log(GetPath(fileName));
+        string content = JsonUtility.ToJson(toSave);
+        WriteFile(GetPath(fileName), content);
+    }
+
+    public static void SaveToTXT(string toSave, string fileName)
+    {
+        WriteFile(GetPath(fileName), toSave);
+    }
+
+    public static List<T> ReadListFromJSON<T>(string fileName)
+    {
+        string content = ReadFile(GetPath(fileName));
 
         if (string.IsNullOrEmpty(content) || content == "{}")
         {
@@ -26,15 +38,22 @@ public static class FileHandler
         return res;
     }
 
-    private static string GetPath(string filename)
+    public static string ReadStringFromTXT(string fileName)
     {
-        return Application.dataPath + "/Rooms/" + filename;
+        return ReadFile(GetPath(fileName));
+    }
+
+    private static string GetPath(string fileName)
+    {
+        return Application.dataPath + "/Rooms/" + fileName;
     }
     
     private static void WriteFile(string path, string content)
     {
         FileStream fileStream = new FileStream(path, FileMode.Create);
 
+        Debug.Log("Content: " + content);
+        
         using (StreamWriter writer = new StreamWriter(fileStream))
         {
             writer.Write(content);

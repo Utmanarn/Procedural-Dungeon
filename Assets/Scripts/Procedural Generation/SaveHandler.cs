@@ -11,9 +11,9 @@ public class SaveHandler : MonoBehaviour
     [SerializeField] private bool saveOnStart = false;
     [SerializeField] private bool loadOnStart = false;
 
-    private int xOffset, yOffset; // Every offset should be set by 11.
+    public int xOffset, yOffset; // Every offset should be set by 11.
 
-    private void Start()
+    private void Awake()
     {
         InitTilemaps();
         if (saveOnStart) OnSave();
@@ -29,7 +29,7 @@ public class SaveHandler : MonoBehaviour
 
         foreach (Tilemap map in maps)
         {
-            map.ClearAllTiles(); // We clear all of the tilemaps on start to avoid loading over anything currently placed on the maps.
+            if (!saveOnStart) map.ClearAllTiles(); // We clear all of the tilemaps on start to avoid loading over anything currently placed on the maps.
             _tilemaps.Add(map.name, map);
         }
     }
@@ -66,12 +66,6 @@ public class SaveHandler : MonoBehaviour
         }
 
         FileHandler.SaveToJSON<TilemapData>(data, fileName);
-    }
-
-    public void SetOffsetValues(int x, int y)
-    {
-        xOffset = x;
-        yOffset = y;
     }
     
     public void OnLoad(string loadFileName)
