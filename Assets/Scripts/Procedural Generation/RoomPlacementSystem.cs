@@ -10,6 +10,8 @@ public class RoomPlacementSystem : MonoBehaviour
      private string _fileName;
      private string _dungeonLayout;
 
+     private bool _specialModifierFlag;
+
      private void Awake()
      {
           _saveHandler = GetComponent<SaveHandler>();
@@ -19,6 +21,7 @@ public class RoomPlacementSystem : MonoBehaviour
      private void Start()
      {
           _fileName = "DungeonLayout.txt";
+          _specialModifierFlag = false;
           GenerateDungeonLayout();
      }
 
@@ -49,11 +52,37 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private void GenerateDungeonLayout()
      {
+          _dungeonLayout = "";
+          
+          // Should move this to after the map layout is done.
+          int randomInt = Random.Range(0, 4);
+          
+          switch (randomInt)
+          {
+               case 0:
+                    // The bottom left room shall be the starter room (special case).
+                    _dungeonLayout += "r0x0;";
+                    break;
+               case 1:
+                    // The room next over to the bottom left shall be the starter room (special case).
+                    _dungeonLayout += "r1x0;";
+                    break;
+               case 2:
+                    _dungeonLayout += "r2x0;";
+                    break;
+               case 3:
+                    _dungeonLayout += "r3x0;";
+                    break;
+               default:
+                    Debug.LogError($"Something went wrong while choosing the starter room, {randomInt} was out of range.");
+                    break;
+          }
+          
           // Temporary layout testing. This will be replaced with the actual procedural dungeon generator.
-          _dungeonLayout = "0100;" +
-                           "0100;" +
-                           "0100;" +
-                           "0100";
+          _dungeonLayout = "-0--;" +
+                           "-1--;" +
+                           "72--;" +
+                           "9---";
           
           FileHandler.SaveToTXT(_dungeonLayout, _fileName);
           
@@ -73,49 +102,111 @@ public class RoomPlacementSystem : MonoBehaviour
           }
      }
 
+     /// <summary>
+     /// Load a specific room number from a char. Alt: Decide a specific modifier for a room.
+     /// </summary>
+     /// <param name="roomNumber">The number that denotes the room type. Alt: Modifier key.</param>
      private void LoadRoomTypeFromChar(char roomNumber)
      {
-          switch (roomNumber)
-          {
-               case '0':
-                    // Load a random room type of room type 0.
-                    
-                    LoadRoomTypeFromFile("mapData.json"); // Testing file to load.
-                    
-                    Debug.Log("Loaded room type 0.");
-                    break;
-               case '1':
-                    // Load a random... type 1.
-                    
-                    LoadRoomTypeFromFile("mapData2.json"); // Testing file to load.
-                    
-                    Debug.Log("Loaded room type 1.");
-                    break;
-               case '2':
-                    // So on...
-                    
-                    LoadRoomTypeFromFile("mapData3.json"); // Testing file to load.
-                    
-                    Debug.Log("Loaded room type 2.");
-                    break;
-               case '3':
-                    // So forth...
-                    
-                    LoadRoomTypeFromFile("mapData4.json"); // Testing file to load.
-                    
-                    Debug.Log("Loaded room type 3.");
-                    break;
-               case ';':
-                    // Shift the y-axis offset up one and reset the x-axis offset.
+          //int randomNumber = Random.Range(0, however many rooms of the roomNumber type exists + 1); // Use the Random.Range[int] variant https://docs.unity3d.com/ScriptReference/Random.Range.html
+          int randomNumber = 0; // TEMP DEBUGGING VARIABLE
 
-                    _saveHandler.xOffset = 0;
-                    _saveHandler.yOffset += 11;
-                    
-                    Debug.Log("Shifting the room y-axis offset and resetting the x-axis offset.");
-                    break;
-               default:
-                    Debug.LogError("Room number was outside the range of allowed types.");
-                    break;
+          if (!_specialModifierFlag)
+          {
+               switch (roomNumber)
+               {
+                    case '0':
+                         // Load a random room type of room type 0.
+                         
+                         LoadRoomTypeFromFile($"roomU{randomNumber}.json"); // Testing file to load.
+                         Debug.Log("Loaded room type 0.");
+                         break;
+                    case '1':
+                         // Load a random... type 1.
+                         
+                         LoadRoomTypeFromFile($"roomUD{randomNumber}.json"); // Testing file to load.
+                         Debug.Log("Loaded room type 1.");
+                         break;
+                    case '2':
+                         // So on...
+                         
+                         LoadRoomTypeFromFile($"roomDL{randomNumber}.json"); // Testing file to load.
+                         Debug.Log("Loaded room type 2.");
+                         break;
+                    case '3':
+                         // So forth...
+                         
+                         LoadRoomTypeFromFile($"roomDR{randomNumber}.json"); // Testing file to load.
+                         Debug.Log("Loaded room type 3.");
+                         break;
+                    case '4':
+                         LoadRoomTypeFromFile($"roomDLR{randomNumber}.json");
+                         Debug.Log("Loaded room type 4.");
+                         break;
+                    case '5':
+                         LoadRoomTypeFromFile($"roomUDLR{randomNumber}.json");
+                         Debug.Log("Loaded room type 5.");
+                         break;
+                    case '6':
+                         LoadRoomTypeFromFile($"roomUL{randomNumber}.json");
+                         Debug.Log("Loaded room type 6.");
+                         break;
+                    case '7':
+                         LoadRoomTypeFromFile($"roomUR{randomNumber}.json");
+                         Debug.Log("Loaded room type 7.");
+                         break;
+                    case '8':
+                         LoadRoomTypeFromFile($"roomULR{randomNumber}.json");
+                         Debug.Log("Loaded room type 8.");
+                         break;
+                    case '9':
+                         LoadRoomTypeFromFile($"roomD{randomNumber}.json");
+                         Debug.Log("Loaded room type 9.");
+                         break;
+                    case '-':
+                         LoadRoomTypeFromFile($"roomB.json");
+                         Debug.Log("Loaded room type -.");
+                         break;
+                    case '*':
+                         // This denotes a shift from the layout of the rooms to the special modifiers such as start point and end point location.
+                         _specialModifierFlag = true;
+                         break;
+                    case ';':
+                         // Shift the y-axis offset up one and reset the x-axis offset.
+
+                         _saveHandler.xOffset = 0;
+                         _saveHandler.yOffset += 11;
+                         
+                         Debug.Log("Shifting the room y-axis offset and resetting the x-axis offset.");
+                         break;
+                    default:
+                         Debug.LogError("Room number was outside the range of allowed types.");
+                         break;
+               }    
+          }
+          else
+          {
+               // if (roomNumber = an integer) { We want to process it based on the modifier flag that is currently active. (Example: If the 'r' flag is active we want to save it
+               // as a Vector2 coordiante.) }
+               
+               // The layout is done and we start to work in with special modifiers for rooms.
+               switch (roomNumber)
+               {
+                    case ';':
+                         // Denotes the end of the current flag being modified.
+                         break;
+                    case 'r':
+                         // Denotes that the following numbers will be used to decide the x and y pos of the room we wish to modify.
+                         
+                         break;
+                    case 'x':
+                         // Denotes the end of the x-axis and start of the y-axis coordinates.
+                         break;
+                    default:
+                         Debug.LogError("Unrecognised modifier type: " + roomNumber);
+                         break;
+               }
+               
           }
      }
 

@@ -101,7 +101,7 @@ public class SaveHandler : MonoBehaviour
                         }
                     }
 
-                    tile.position += new Vector3Int(xOffset, yOffset, 0); // Offsetting tiles like this works. Now it needs a system to correctly offset the tiles for each room.
+                    tile.position += new Vector3Int(xOffset, yOffset, 0);
                     map.SetTile(tile.position, tileBase);
                 }
             }
