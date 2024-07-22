@@ -12,7 +12,10 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private bool _specialModifierFlag;
 
-     private void Awake()
+    [Header("Debugging")]
+    [SerializeField] private bool testLoadLayouts = false;
+
+    private void Awake()
      {
           _saveHandler = GetComponent<SaveHandler>();
           AddRoomsToHasSet();
@@ -20,9 +23,14 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private void Start()
      {
-          _fileName = "DungeonLayout.txt";
-          _specialModifierFlag = false;
-          GenerateDungeonLayout();
+        _fileName = "DungeonLayout.txt";
+        _specialModifierFlag = false;
+        if (testLoadLayouts)
+        {
+            TestLoadMaps();
+            return;
+        }
+        GenerateDungeonLayout();
      }
 
      private void LoadDungeonLayoutFromLayout()
@@ -52,7 +60,7 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private void GenerateDungeonLayout()
      {
-          _dungeonLayout = "";
+          _dungeonLayout = GenerateMapLayout();
           
           // Should move this to after the map layout is done.
           int randomInt = Random.Range(0, 4);
@@ -83,11 +91,22 @@ public class RoomPlacementSystem : MonoBehaviour
                            "-1--;" +
                            "72--;" +
                            "9---";
+
           
           FileHandler.SaveToTXT(_dungeonLayout, _fileName);
           
           LoadDungeonLayoutFromLayout();
      }
+
+    // The actual point where we generate the full layout of the dungeon.
+    private string GenerateMapLayout()
+    {
+        string layout = "";
+        // Start out with the starting room area placement and the bottom row of rooms.
+
+
+        return layout;
+    }
 
      private void AddRoomsToHasSet()
      {
