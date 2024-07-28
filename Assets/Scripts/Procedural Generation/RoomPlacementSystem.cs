@@ -63,7 +63,7 @@ public class RoomPlacementSystem : MonoBehaviour
           _dungeonLayout = GenerateMapLayout();
           
           // Should move this to after the map layout is done.
-          int randomInt = Random.Range(0, 4);
+          /*int randomInt = Random.Range(0, 4);
           
           switch (randomInt)
           {
@@ -85,12 +85,12 @@ public class RoomPlacementSystem : MonoBehaviour
                     Debug.LogError($"Something went wrong while choosing the starter room, {randomInt} was out of range.");
                     break;
           }
-          
+          */
           // Temporary layout testing. This will be replaced with the actual procedural dungeon generator.
-          _dungeonLayout = "-0--;" +
+          /*_dungeonLayout = "-0--;" +
                            "-1--;" +
                            "72--;" +
-                           "9---";
+                           "9---";*/
 
           
           FileHandler.SaveToTXT(_dungeonLayout, _fileName);
@@ -101,9 +101,191 @@ public class RoomPlacementSystem : MonoBehaviour
     // The actual point where we generate the full layout of the dungeon.
     private string GenerateMapLayout()
     {
+        bool finishRoomPlacement = false;
+        int lastRoomType = 0;
+        int currentPosInString = 0;
+        int nextPathLocation = 0;
         string layout = "";
         // Start out with the starting room area placement and the bottom row of rooms.
+        int randomInt = Random.Range(0, 4);
+        Debug.Log("Rand int: " + randomInt);
+        switch (randomInt)
+        {
+            case 0:
+                layout = "";
+                lastRoomType = 0;
+                currentPosInString = 0;
+                break;
+            case 1:
+                layout = "-";
+                lastRoomType = 0;
+                currentPosInString = 1;
+                break;
+            case 2:
+                layout = "--";
+                lastRoomType = 0;
+                currentPosInString = 2;
+                break;
+            case 3:
+                layout = "---";
+                lastRoomType = 0;
+                currentPosInString = 3;
+                break;
+        }
 
+
+        // The modulus operations to check borders with edges might cause problems for the bottom left (0x0) position as it always returns 0 on both %4 and %5 operations.
+        while (!finishRoomPlacement)
+        {
+            if (currentPosInString != 0 && (currentPosInString - 4) % 5 == 0) // We want to add a separator at the end of every row.
+            {
+                if (currentPosInString < layout.Length - 1)
+                {
+                    currentPosInString++;
+                }
+                else
+                {
+                    layout += ";";
+                    currentPosInString++;
+                }
+
+                continue;
+            }
+
+            // Wall off any room that is not on the path. (TODO: This may later change to just add in a left/right room instead to add rooms that are not on the main path. Though this may lead to everything being filled with left/right rooms everywhere.)
+            if (currentPosInString != nextPathLocation)
+            {
+                if (nextPathLocation < currentPosInString) currentPosInString--;
+                else
+                {
+                    if (currentPosInString < layout.Length - 1)
+                    {
+                        currentPosInString++;
+                    }
+                    else
+                    {
+                        layout += "-";
+                        currentPosInString++;
+                    }
+                }
+
+                continue;
+            }
+
+            randomInt = Random.Range(0, 5); // Number from 0-4. On a 0 or 1 the solution path moves left. On a 2 or 3 the solution path moves right. On a 4 the solution path goes up.
+            if (nextPathLocation == currentPosInString && lastRoomType == 1)
+            {
+                randomInt = Random.Range(0, 4);
+                layout += "2"; // We connect the new area with the one below.
+                
+                // If we go left or right as our next step.
+                if (currentPosInString % 5 == 0)
+                {
+                    nextPathLocation++;
+                    currentPosInString++;
+                }
+                else if ((currentPosInString - 3) % 5 == 0)
+                {
+                    nextPathLocation--;
+                    currentPosInString--;
+                }
+                else if (randomInt == 0 || randomInt == 1)
+                {
+                    nextPathLocation--;
+                    currentPosInString--;
+                }
+                else if (randomInt == 2 || randomInt == 3)
+                {
+                    nextPathLocation++;
+                    currentPosInString++;
+                }
+
+                continue;
+            }
+
+            if (randomInt == 0 || randomInt == 1)
+            {
+                if (currentPosInString % 5 == 0) // If the room is on the leftmost row and tries to go left we go up instead.
+                {
+                    if (currentPosInString < layout.Length - 1) // If we are not at the end of the string we want to replace the current selected room with the new room type.
+                    {
+                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+
+                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                    }
+                    else
+                    {
+                        layout += "1";
+                    }
+
+                    lastRoomType = 1;
+                    nextPathLocation = currentPosInString + 5; // Path continues over the current path pos, which is 5 positions forward in the string because we got a 4x4 grid and 1 extra ; separator.
+                    currentPosInString++;
+                }
+                else
+                {
+                    if (currentPosInString < layout.Length - 1)
+                    {
+                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+
+                        layout = subLayoutBefore + "0" + subLayoutAfter;
+                    }
+                    else
+                    {
+                        layout += "0";
+                    }
+                    lastRoomType = 0;
+                    nextPathLocation = currentPosInString - 1;
+                    currentPosInString--;
+                }
+            }
+            else if (randomInt == 2 || randomInt == 3)
+            {
+                if ((currentPosInString - 3) % 5 == 0) // If the room is on the rightmost row and tries to go right we go up instead.
+                {
+                    if (currentPosInString < layout.Length - 1)
+                    {
+                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+
+                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                    }
+                    else
+                    {
+                        layout += "1";
+                    }
+
+                    lastRoomType = 1;
+                    nextPathLocation = currentPosInString + 5;
+                    currentPosInString++;
+                }
+                else
+                {
+                    if (currentPosInString < layout.Length - 1)
+                    {
+                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+
+                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                    }
+                    else
+                    {
+                        layout += "1";
+                    }
+
+                    lastRoomType = 1;
+                    nextPathLocation++;
+                }
+            }
+            else if (randomInt == 5)
+            {
+                // Add a room going up.
+            }
+
+            finishRoomPlacement = true;
+        }
 
         return layout;
     }
@@ -135,59 +317,74 @@ public class RoomPlacementSystem : MonoBehaviour
                switch (roomNumber)
                {
                     case '0':
-                         // Load a random room type of room type 0.
+                         // Room going Left and Right.
                          
-                         LoadRoomTypeFromFile($"roomU{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomLR{randomNumber}.json"); // Testing file to load.
                          Debug.Log("Loaded room type 0.");
                          break;
                     case '1':
-                         // Load a random... type 1.
+                         // Room going Up, Left and Right.
                          
-                         LoadRoomTypeFromFile($"roomUD{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomULR{randomNumber}.json"); // Testing file to load.
                          Debug.Log("Loaded room type 1.");
                          break;
                     case '2':
-                         // So on...
+                         // Room going Down, Left and Right.
                          
-                         LoadRoomTypeFromFile($"roomDL{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomDLR{randomNumber}.json"); // Testing file to load.
                          Debug.Log("Loaded room type 2.");
                          break;
-                    case '3':
-                         // So forth...
+                    /*case '3':
+                         // Room going down and right.
                          
                          LoadRoomTypeFromFile($"roomDR{randomNumber}.json"); // Testing file to load.
                          Debug.Log("Loaded room type 3.");
                          break;
                     case '4':
+                        // Room going down, left and right.
+
                          LoadRoomTypeFromFile($"roomDLR{randomNumber}.json");
                          Debug.Log("Loaded room type 4.");
                          break;
                     case '5':
+                        // Room going up, down, left and right.
+
                          LoadRoomTypeFromFile($"roomUDLR{randomNumber}.json");
                          Debug.Log("Loaded room type 5.");
                          break;
                     case '6':
+                        // Room going up and left.
+
                          LoadRoomTypeFromFile($"roomUL{randomNumber}.json");
                          Debug.Log("Loaded room type 6.");
                          break;
                     case '7':
+                        // Room going up and right.
+
                          LoadRoomTypeFromFile($"roomUR{randomNumber}.json");
                          Debug.Log("Loaded room type 7.");
                          break;
                     case '8':
+                        // Room going up, left and right.
+
                          LoadRoomTypeFromFile($"roomULR{randomNumber}.json");
                          Debug.Log("Loaded room type 8.");
                          break;
                     case '9':
+                        // Room going down.
+
                          LoadRoomTypeFromFile($"roomD{randomNumber}.json");
                          Debug.Log("Loaded room type 9.");
-                         break;
+                         break;*/
                     case '-':
+                        // Blocked room.
+
                          LoadRoomTypeFromFile($"roomB.json");
                          Debug.Log("Loaded room type -.");
                          break;
                     case '*':
                          // This denotes a shift from the layout of the rooms to the special modifiers such as start point and end point location.
+
                          _specialModifierFlag = true;
                          break;
                     case ';':
