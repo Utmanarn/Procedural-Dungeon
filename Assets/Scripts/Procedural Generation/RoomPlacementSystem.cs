@@ -172,7 +172,6 @@ public class RoomPlacementSystem : MonoBehaviour
                 continue;
             }
 
-            randomInt = Random.Range(0, 5); // Number from 0-4. On a 0 or 1 the solution path moves left. On a 2 or 3 the solution path moves right. On a 4 the solution path goes up.
             if (nextPathLocation == currentPosInString && lastRoomType == 1)
             {
                 randomInt = Random.Range(0, 4);
@@ -203,10 +202,14 @@ public class RoomPlacementSystem : MonoBehaviour
                 continue;
             }
 
+            randomInt = Random.Range(0, 5); // Number from 0-4. On a 0 or 1 the solution path moves left. On a 2 or 3 the solution path moves right. On a 4 the solution path goes up.
+
             if (randomInt == 0 || randomInt == 1)
             {
                 if (currentPosInString % 5 == 0) // If the room is on the leftmost row and tries to go left we go up instead.
                 {
+                    TestForFinishDoor();
+
                     if (currentPosInString < layout.Length - 1) // If we are not at the end of the string we want to replace the current selected room with the new room type.
                     {
                         string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
@@ -237,7 +240,7 @@ public class RoomPlacementSystem : MonoBehaviour
                         layout += "0";
                     }
                     lastRoomType = 0;
-                    nextPathLocation = currentPosInString - 1;
+                    nextPathLocation--;
                     currentPosInString--;
                 }
             }
@@ -245,6 +248,8 @@ public class RoomPlacementSystem : MonoBehaviour
             {
                 if ((currentPosInString - 3) % 5 == 0) // If the room is on the rightmost row and tries to go right we go up instead.
                 {
+                    TestForFinishDoor();
+
                     if (currentPosInString < layout.Length - 1)
                     {
                         string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
@@ -268,26 +273,33 @@ public class RoomPlacementSystem : MonoBehaviour
                         string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
                         string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
 
-                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                        layout = subLayoutBefore + "0" + subLayoutAfter;
                     }
                     else
                     {
-                        layout += "1";
+                        layout += "0";
                     }
 
-                    lastRoomType = 1;
+                    lastRoomType = 0;
                     nextPathLocation++;
+                    currentPosInString++;
                 }
             }
             else if (randomInt == 5)
             {
                 // Add a room going up.
+                TestForFinishDoor();
             }
 
             finishRoomPlacement = true;
         }
 
         return layout;
+    }
+
+    private void TestForFinishDoor()
+    {
+        // TODO: This will check if we are at the top row of the layout string and if so we want to add the finish room instead of adding a room that goes up.
     }
 
      private void AddRoomsToHasSet()
