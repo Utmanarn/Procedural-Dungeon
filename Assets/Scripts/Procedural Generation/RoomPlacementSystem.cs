@@ -84,13 +84,13 @@ public class RoomPlacementSystem : MonoBehaviour
                default:
                     Debug.LogError($"Something went wrong while choosing the starter room, {randomInt} was out of range.");
                     break;
-          }
-          */
+          }*/
+          
           // Temporary layout testing. This will be replaced with the actual procedural dungeon generator.
-          /*_dungeonLayout = "-0--;" +
-                           "-1--;" +
-                           "72--;" +
-                           "9---";*/
+          /*_dungeonLayout = "-10-;" +
+                           "-10-;" +
+                           "-201;" +
+                           "--02";*/
 
           
           FileHandler.SaveToTXT(_dungeonLayout, _fileName);
@@ -115,43 +115,56 @@ public class RoomPlacementSystem : MonoBehaviour
                 layout = "";
                 lastRoomType = 0;
                 currentPosInString = 0;
+                nextPathLocation = 0;
                 break;
             case 1:
                 layout = "-";
                 lastRoomType = 0;
                 currentPosInString = 1;
+                nextPathLocation = 1;
                 break;
             case 2:
                 layout = "--";
                 lastRoomType = 0;
                 currentPosInString = 2;
+                nextPathLocation = 2;
                 break;
             case 3:
                 layout = "---";
                 lastRoomType = 0;
                 currentPosInString = 3;
+                nextPathLocation = 3;
                 break;
         }
 
-
-        // The modulus operations to check borders with edges might cause problems for the bottom left (0x0) position as it always returns 0 on both %4 and %5 operations.
+        int safetyCounter = 0;
         while (!finishRoomPlacement)
         {
+            if (safetyCounter > 40)
+            {
+                Debug.LogWarning("Loop reached the max number of itterations.");
+                break;
+            }
+            safetyCounter++;
+
+            if (layout.Length - 1 == 18) break;
+
             if (currentPosInString != 0 && (currentPosInString - 4) % 5 == 0) // We want to add a separator at the end of every row.
             {
+                string subLayoutAfter = "";
+
+                string subLayoutBefore = layout.Substring(0, currentPosInString);
                 if (currentPosInString < layout.Length - 1)
                 {
-                    currentPosInString++;
-                }
-                else
-                {
-                    layout += ";";
-                    currentPosInString++;
+                    subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
                 }
 
+                layout = subLayoutBefore + ";" + subLayoutAfter;
+                
+                currentPosInString++;
                 continue;
             }
-
+            
             // Wall off any room that is not on the path. (TODO: This may later change to just add in a left/right room instead to add rooms that are not on the main path. Though this may lead to everything being filled with left/right rooms everywhere.)
             if (currentPosInString != nextPathLocation)
             {
@@ -176,6 +189,7 @@ public class RoomPlacementSystem : MonoBehaviour
             {
                 randomInt = Random.Range(0, 4);
                 layout += "2"; // We connect the new area with the one below.
+                lastRoomType = 2;
                 
                 // If we go left or right as our next step.
                 if (currentPosInString % 5 == 0)
@@ -198,7 +212,7 @@ public class RoomPlacementSystem : MonoBehaviour
                     nextPathLocation++;
                     currentPosInString++;
                 }
-
+                
                 continue;
             }
 
@@ -208,12 +222,16 @@ public class RoomPlacementSystem : MonoBehaviour
             {
                 if (currentPosInString % 5 == 0) // If the room is on the leftmost row and tries to go left we go up instead.
                 {
-                    TestForFinishDoor();
+                    if (TestForFinishDoor(layout))
+                    {
+                        // TODO: Add finish room.
+                        nextPathLocation = 19;
+                    }
 
                     if (currentPosInString < layout.Length - 1) // If we are not at the end of the string we want to replace the current selected room with the new room type.
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+                        string subLayoutBefore = layout.Substring(0, currentPosInString);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
 
                         layout = subLayoutBefore + "1" + subLayoutAfter;
                     }
@@ -230,8 +248,8 @@ public class RoomPlacementSystem : MonoBehaviour
                 {
                     if (currentPosInString < layout.Length - 1)
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+                        string subLayoutBefore = layout.Substring(0, currentPosInString);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
 
                         layout = subLayoutBefore + "0" + subLayoutAfter;
                     }
@@ -248,12 +266,16 @@ public class RoomPlacementSystem : MonoBehaviour
             {
                 if ((currentPosInString - 3) % 5 == 0) // If the room is on the rightmost row and tries to go right we go up instead.
                 {
-                    TestForFinishDoor();
+                    if (TestForFinishDoor(layout))
+                    {
+                        // TODO: Add finish room.
+                        nextPathLocation = 19;
+                    }
 
                     if (currentPosInString < layout.Length - 1)
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+                        string subLayoutBefore = layout.Substring(0, currentPosInString);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
 
                         layout = subLayoutBefore + "1" + subLayoutAfter;
                     }
@@ -270,8 +292,8 @@ public class RoomPlacementSystem : MonoBehaviour
                 {
                     if (currentPosInString < layout.Length - 1)
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString - 1);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - 1);
+                        string subLayoutBefore = layout.Substring(0, currentPosInString);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
 
                         layout = subLayoutBefore + "0" + subLayoutAfter;
                     }
@@ -285,21 +307,46 @@ public class RoomPlacementSystem : MonoBehaviour
                     currentPosInString++;
                 }
             }
-            else if (randomInt == 5)
+            else if (randomInt == 4)
             {
                 // Add a room going up.
-                TestForFinishDoor();
-            }
+                if (TestForFinishDoor(layout))
+                {
+                    // TODO: Add finish room.
+                    nextPathLocation = 19;
+                }
+                else
+                {
+                    if (currentPosInString < layout.Length - 1)
+                    {
+                        string subLayoutBefore = layout.Substring(0, currentPosInString);
+                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
 
-            finishRoomPlacement = true;
+                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                    }
+                    else
+                    {
+                        layout += "1";
+                    }
+
+                    lastRoomType = 1;
+                    nextPathLocation = currentPosInString + 5;
+                    currentPosInString++;
+                }
+            }
         }
 
         return layout;
     }
 
-    private void TestForFinishDoor()
+    private bool TestForFinishDoor(string layout)
     {
         // TODO: This will check if we are at the top row of the layout string and if so we want to add the finish room instead of adding a room that goes up.
+        if (layout.Length > 15)
+        {
+            return true;
+        }
+        return false;
     }
 
      private void AddRoomsToHasSet()
@@ -332,19 +379,16 @@ public class RoomPlacementSystem : MonoBehaviour
                          // Room going Left and Right.
                          
                          LoadRoomTypeFromFile($"roomLR{randomNumber}.json"); // Testing file to load.
-                         Debug.Log("Loaded room type 0.");
                          break;
                     case '1':
                          // Room going Up, Left and Right.
                          
                          LoadRoomTypeFromFile($"roomULR{randomNumber}.json"); // Testing file to load.
-                         Debug.Log("Loaded room type 1.");
                          break;
                     case '2':
                          // Room going Down, Left and Right.
                          
                          LoadRoomTypeFromFile($"roomDLR{randomNumber}.json"); // Testing file to load.
-                         Debug.Log("Loaded room type 2.");
                          break;
                     /*case '3':
                          // Room going down and right.
@@ -392,7 +436,6 @@ public class RoomPlacementSystem : MonoBehaviour
                         // Blocked room.
 
                          LoadRoomTypeFromFile($"roomB.json");
-                         Debug.Log("Loaded room type -.");
                          break;
                     case '*':
                          // This denotes a shift from the layout of the rooms to the special modifiers such as start point and end point location.
