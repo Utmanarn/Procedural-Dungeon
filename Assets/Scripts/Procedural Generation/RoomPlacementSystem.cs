@@ -8,7 +8,7 @@ public class RoomPlacementSystem : MonoBehaviour
      private SaveHandler _saveHandler;
 
      private string _fileName;
-     private string _dungeonLayout;
+     private char[,] _dungeonLayout;
 
      private bool _specialModifierFlag;
 
@@ -23,6 +23,7 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private void Start()
      {
+         _dungeonLayout = new char[4, 4];
         _fileName = "DungeonLayout.txt";
         _specialModifierFlag = false;
         if (testLoadLayouts)
@@ -41,20 +42,23 @@ public class RoomPlacementSystem : MonoBehaviour
                return;
           }
 
-          string layout = FileHandler.ReadStringFromTXT(_fileName);
+          char[,] layout = FileHandler.ReadArrayFromTXT(_fileName);
 
-          if (layout == "")
+          if (layout == null)
           {
                Debug.LogError("Failed to load dungeon layout, are you sure the layout was saved correctly?");
                return;
           }
          
           Debug.Log("Layout is: " + layout);
-          for (int i = 0; i < layout.Length; i++)
+          for (int i = 0; i < 4; i++)
           {
-               char roomType = layout[i];
-
-               LoadRoomTypeFromChar(roomType);
+              for (int j = 0; j < 4; j++)
+              {
+                  char roomType = layout[i, j];
+               
+                  LoadRoomTypeFromChar(roomType, new Vector2Int(i, j));
+              }
           }
      }
 
@@ -93,47 +97,51 @@ public class RoomPlacementSystem : MonoBehaviour
                            "--02";*/
 
           
-          FileHandler.SaveToTXT(_dungeonLayout, _fileName);
+          FileHandler.SaveArrayToTXT(_dungeonLayout, _fileName);
           
           LoadDungeonLayoutFromLayout();
      }
 
     // The actual point where we generate the full layout of the dungeon.
-    private string GenerateMapLayout()
+    private char[,] GenerateMapLayout()
     {
         bool finishRoomPlacement = false;
-        int lastRoomType = 0;
-        int currentPosInString = 0;
-        int nextPathLocation = 0;
-        string layout = "";
+        char lastRoomType = '0';
+        Vector2Int currentPosition = new Vector2Int(0, 0);
+        Vector2Int nextPathLocation = new Vector2Int(0, 0);
+        char[,] layout = new char[4, 4];
         // Start out with the starting room area placement and the bottom row of rooms.
         int randomInt = Random.Range(0, 4);
         Debug.Log("Rand int: " + randomInt);
+
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                layout[i, j] = '-';
+            }    
+        }
         switch (randomInt)
         {
             case 0:
-                layout = "";
-                lastRoomType = 0;
-                currentPosInString = 0;
-                nextPathLocation = 0;
+                lastRoomType = '0';
+                currentPosition = new Vector2Int(0, 0);
+                nextPathLocation = new Vector2Int(0, 0);
                 break;
             case 1:
-                layout = "-";
-                lastRoomType = 0;
-                currentPosInString = 1;
-                nextPathLocation = 1;
+                lastRoomType = '0';
+                currentPosition = new Vector2Int(1, 0);
+                nextPathLocation = new Vector2Int(1, 0);
                 break;
             case 2:
-                layout = "--";
-                lastRoomType = 0;
-                currentPosInString = 2;
-                nextPathLocation = 2;
+                lastRoomType = '0';
+                currentPosition = new Vector2Int(2, 0);
+                nextPathLocation = new Vector2Int(2, 0);
                 break;
             case 3:
-                layout = "---";
-                lastRoomType = 0;
-                currentPosInString = 3;
-                nextPathLocation = 3;
+                lastRoomType = '0';
+                currentPosition = new Vector2Int(3, 0);
+                nextPathLocation = new Vector2Int(3, 0);
                 break;
         }
 
@@ -147,70 +155,34 @@ public class RoomPlacementSystem : MonoBehaviour
             }
             safetyCounter++;
 
-            if (layout.Length - 1 == 18) break;
+            if (currentPosition.y >= 4) break; // Change out to figure out when we have gotten to the end.
 
-            if (currentPosInString != 0 && (currentPosInString - 4) % 5 == 0) // We want to add a separator at the end of every row.
-            {
-                string subLayoutAfter = "";
-
-                string subLayoutBefore = layout.Substring(0, currentPosInString);
-                if (currentPosInString < layout.Length - 1)
-                {
-                    subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
-                }
-
-                layout = subLayoutBefore + ";" + subLayoutAfter;
-                
-                currentPosInString++;
-                continue;
-            }
-            
-            // Wall off any room that is not on the path. (TODO: This may later change to just add in a left/right room instead to add rooms that are not on the main path. Though this may lead to everything being filled with left/right rooms everywhere.)
-            if (currentPosInString != nextPathLocation)
-            {
-                if (nextPathLocation < currentPosInString) currentPosInString--;
-                else
-                {
-                    if (currentPosInString < layout.Length - 1)
-                    {
-                        currentPosInString++;
-                    }
-                    else
-                    {
-                        layout += "-";
-                        currentPosInString++;
-                    }
-                }
-
-                continue;
-            }
-
-            if (nextPathLocation == currentPosInString && lastRoomType == 1)
+            if (nextPathLocation == currentPosition && lastRoomType == '1')
             {
                 randomInt = Random.Range(0, 4);
-                layout += "2"; // We connect the new area with the one below.
-                lastRoomType = 2;
+                layout[currentPosition.x, currentPosition.y] = '2'; // We connect the new area with the one below.
+                lastRoomType = '2';
                 
                 // If we go left or right as our next step.
-                if (currentPosInString % 5 == 0)
+                if (currentPosition.x == 0)
                 {
-                    nextPathLocation++;
-                    currentPosInString++;
+                    nextPathLocation.x++;
+                    currentPosition.x++;
                 }
-                else if ((currentPosInString - 3) % 5 == 0)
+                else if (currentPosition.x == 3)
                 {
-                    nextPathLocation--;
-                    currentPosInString--;
+                    nextPathLocation.x--;
+                    currentPosition.x--;
                 }
                 else if (randomInt == 0 || randomInt == 1)
                 {
-                    nextPathLocation--;
-                    currentPosInString--;
+                    nextPathLocation.x--;
+                    currentPosition.x--;
                 }
                 else if (randomInt == 2 || randomInt == 3)
                 {
-                    nextPathLocation++;
-                    currentPosInString++;
+                    nextPathLocation.x++;
+                    currentPosition.x++;
                 }
                 
                 continue;
@@ -220,118 +192,101 @@ public class RoomPlacementSystem : MonoBehaviour
 
             if (randomInt == 0 || randomInt == 1)
             {
-                if (currentPosInString % 5 == 0) // If the room is on the leftmost row and tries to go left we go up instead.
+                if (currentPosition.x == 0) // If the room is on the leftmost row and tries to go left we go up instead.
                 {
-                    if (TestForFinishDoor(layout))
+                    if (TestForFinishDoor(currentPosition))
                     {
-                        // TODO: Add finish room.
-                        nextPathLocation = 19;
+                        layout[currentPosition.x, currentPosition.y] = '1'; // TODO: Add finish room instead.
+                        break;
                     }
 
-                    if (currentPosInString < layout.Length - 1) // If we are not at the end of the string we want to replace the current selected room with the new room type.
+                    if (layout[currentPosition.x, currentPosition.y] == '2')
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
+                        layout[currentPosition.x, currentPosition.y] = '3';
 
-                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                        lastRoomType = '1'; // We still pretend that the last room only goes up.
                     }
                     else
                     {
-                        layout += "1";
+                        layout[currentPosition.x, currentPosition.y] = '1';
+                        lastRoomType = '1';
                     }
-
-                    lastRoomType = 1;
-                    nextPathLocation = currentPosInString + 5; // Path continues over the current path pos, which is 5 positions forward in the string because we got a 4x4 grid and 1 extra ; separator.
-                    currentPosInString++;
+                    
+                    nextPathLocation.y++; // Path continues over the current path pos, which is 5 positions forward in the string because we got a 4x4 grid and 1 extra ; separator.
+                    currentPosition.y++;
                 }
                 else
                 {
-                    if (currentPosInString < layout.Length - 1)
+                    if (layout[currentPosition.x, currentPosition.y] == '-')
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
+                        layout[currentPosition.x, currentPosition.y] = '0';
 
-                        layout = subLayoutBefore + "0" + subLayoutAfter;
+                        lastRoomType = '0';
                     }
-                    else
-                    {
-                        layout += "0";
-                    }
-                    lastRoomType = 0;
-                    nextPathLocation--;
-                    currentPosInString--;
+                    
+                    nextPathLocation.x--;
+                    currentPosition.x--;
                 }
             }
             else if (randomInt == 2 || randomInt == 3)
             {
-                if ((currentPosInString - 3) % 5 == 0) // If the room is on the rightmost row and tries to go right we go up instead.
+                if (currentPosition.x == 3) // If the room is on the rightmost row and tries to go right we go up instead.
                 {
-                    if (TestForFinishDoor(layout))
+                    if (TestForFinishDoor(currentPosition))
                     {
-                        // TODO: Add finish room.
-                        nextPathLocation = 19;
+                        layout[currentPosition.x, currentPosition.y] = '1'; // TODO: Add finish room instead.
+                        break;
                     }
 
-                    if (currentPosInString < layout.Length - 1)
+                    if (layout[currentPosition.x, currentPosition.y] == '2')
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
+                        layout[currentPosition.x, currentPosition.y] = '3';
 
-                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                        lastRoomType = '1'; // We still pretend that the last room only goes up.
                     }
                     else
                     {
-                        layout += "1";
+                        layout[currentPosition.x, currentPosition.y] = '1';
+                        lastRoomType = '1';
                     }
-
-                    lastRoomType = 1;
-                    nextPathLocation = currentPosInString + 5;
-                    currentPosInString++;
+                    nextPathLocation.y++;
+                    currentPosition.y++;
                 }
                 else
                 {
-                    if (currentPosInString < layout.Length - 1)
+                    if (layout[currentPosition.x, currentPosition.y] == '-')
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
+                        layout[currentPosition.x, currentPosition.y] = '0';
 
-                        layout = subLayoutBefore + "0" + subLayoutAfter;
+                        lastRoomType = '0';
                     }
-                    else
-                    {
-                        layout += "0";
-                    }
-
-                    lastRoomType = 0;
-                    nextPathLocation++;
-                    currentPosInString++;
+                    nextPathLocation.x++;
+                    currentPosition.x++;
                 }
             }
             else if (randomInt == 4)
             {
                 // Add a room going up.
-                if (TestForFinishDoor(layout))
+                if (TestForFinishDoor(currentPosition))
                 {
-                    // TODO: Add finish room.
-                    nextPathLocation = 19;
+                    layout[currentPosition.x, currentPosition.y] = '1'; // TODO: Add finish room instead.
+                    break;
                 }
                 else
                 {
-                    if (currentPosInString < layout.Length - 1)
+                    if (layout[currentPosition.x, currentPosition.y] == '2')
                     {
-                        string subLayoutBefore = layout.Substring(0, currentPosInString);
-                        string subLayoutAfter = layout.Substring(currentPosInString + 1, layout.Length - currentPosInString - 1);
+                        layout[currentPosition.x, currentPosition.y] = '3';
 
-                        layout = subLayoutBefore + "1" + subLayoutAfter;
+                        lastRoomType = '1'; // We still pretend that the last room only goes up.
                     }
                     else
                     {
-                        layout += "1";
+                        layout[currentPosition.x, currentPosition.y] = '1';
+                        lastRoomType = '1';
                     }
-
-                    lastRoomType = 1;
-                    nextPathLocation = currentPosInString + 5;
-                    currentPosInString++;
+                    nextPathLocation.y++;
+                    currentPosition.y++;
                 }
             }
         }
@@ -339,10 +294,10 @@ public class RoomPlacementSystem : MonoBehaviour
         return layout;
     }
 
-    private bool TestForFinishDoor(string layout)
+    private bool TestForFinishDoor(Vector2 pos)
     {
         // TODO: This will check if we are at the top row of the layout string and if so we want to add the finish room instead of adding a room that goes up.
-        if (layout.Length > 15)
+        if (pos.y == 3)
         {
             return true;
         }
@@ -366,7 +321,7 @@ public class RoomPlacementSystem : MonoBehaviour
      /// Load a specific room number from a char. Alt: Decide a specific modifier for a room.
      /// </summary>
      /// <param name="roomNumber">The number that denotes the room type. Alt: Modifier key.</param>
-     private void LoadRoomTypeFromChar(char roomNumber)
+     private void LoadRoomTypeFromChar(char roomNumber, Vector2Int offset)
      {
           //int randomNumber = Random.Range(0, however many rooms of the roomNumber type exists + 1); // Use the Random.Range[int] variant https://docs.unity3d.com/ScriptReference/Random.Range.html
           int randomNumber = 0; // TEMP DEBUGGING VARIABLE
@@ -390,13 +345,13 @@ public class RoomPlacementSystem : MonoBehaviour
                          
                          LoadRoomTypeFromFile($"roomDLR{randomNumber}.json"); // Testing file to load.
                          break;
-                    /*case '3':
-                         // Room going down and right.
+                    case '3':
+                         // Room going up, down, left and right.
                          
-                         LoadRoomTypeFromFile($"roomDR{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomUDLR{randomNumber}.json"); // Testing file to load.
                          Debug.Log("Loaded room type 3.");
                          break;
-                    case '4':
+                    /*case '4':
                         // Room going down, left and right.
 
                          LoadRoomTypeFromFile($"roomDLR{randomNumber}.json");
@@ -454,6 +409,8 @@ public class RoomPlacementSystem : MonoBehaviour
                          Debug.LogError("Room number was outside the range of allowed types.");
                          break;
                }    
+               _saveHandler.xOffset = offset.x * 11;
+               _saveHandler.yOffset = offset.y * 11;
           }
           else
           {
@@ -484,7 +441,6 @@ public class RoomPlacementSystem : MonoBehaviour
      private void LoadRoomTypeFromFile(string fileName)
      {
           _saveHandler.OnLoad(fileName);
-          _saveHandler.xOffset += 11;
      }
 
      private void TestLoadAllSavedRooms()

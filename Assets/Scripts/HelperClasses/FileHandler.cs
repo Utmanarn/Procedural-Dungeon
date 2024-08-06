@@ -24,6 +24,11 @@ public static class FileHandler
         WriteFile(GetPath(fileName), toSave);
     }
 
+    public static void SaveArrayToTXT(char[,] array, string fileName)
+    {
+        WriteFileArray(GetPath(fileName), array);
+    }
+
     public static List<T> ReadListFromJSON<T>(string fileName)
     {
         string content = ReadFile(GetPath(fileName));
@@ -42,6 +47,11 @@ public static class FileHandler
     {
         return ReadFile(GetPath(fileName));
     }
+    
+    public static char[,] ReadArrayFromTXT(string fileName)
+    {
+        return ReadFileArray(GetPath(fileName));
+    }
 
     private static string GetPath(string fileName)
     {
@@ -53,6 +63,28 @@ public static class FileHandler
         FileStream fileStream = new FileStream(path, FileMode.Create);
 
         Debug.Log("Content: " + content);
+        
+        using (StreamWriter writer = new StreamWriter(fileStream))
+        {
+            writer.Write(content);
+        }
+    }
+    
+    private static void WriteFileArray(string path, char[,] array)
+    {
+        FileStream fileStream = new FileStream(path, FileMode.Create);
+
+        Debug.Log("Content: " + array);
+
+        string content = "";
+        
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                content += array[i, j].ToString();
+            }
+        }
         
         using (StreamWriter writer = new StreamWriter(fileStream))
         {
@@ -72,6 +104,29 @@ public static class FileHandler
         }
 
         return "";
+    }
+    
+    private static char[,] ReadFileArray(string path)
+    {
+        if (File.Exists(path))
+        {
+            using (StreamReader reader = new StreamReader(path))
+            {
+                string content = reader.ReadToEnd();
+                char[,] array = new char[4,4];
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        array[i, j] = content[i * 4 + j];
+                    }
+                }
+                
+                return array;
+            }
+        }
+
+        return null;
     }
 }
 
