@@ -29,6 +29,7 @@ public class SaveHandler : MonoBehaviour
 
         foreach (Tilemap map in maps)
         {
+            if (map.name == "Tilemap_NoClear") continue;
             if (!saveOnStart) map.ClearAllTiles(); // We clear all of the tilemaps on start to avoid loading over anything currently placed on the maps.
             _tilemaps.Add(map.name, map);
         }
