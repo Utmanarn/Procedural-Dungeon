@@ -57,6 +57,7 @@ public class RoomPlacementSystem : MonoBehaviour
               {
                   char roomType = layout[i, j];
                
+                  Debug.Log("roomType = " + roomType + " Offset = " + new Vector2Int(i, j));
                   LoadRoomTypeFromChar(roomType, new Vector2Int(i, j));
               }
           }
@@ -65,40 +66,7 @@ public class RoomPlacementSystem : MonoBehaviour
      private void GenerateDungeonLayout()
      {
           _dungeonLayout = GenerateMapLayout();
-          
-          // Should move this to after the map layout is done.
-          /*int randomInt = Random.Range(0, 4);
-          
-          switch (randomInt)
-          {
-               case 0:
-                    // The bottom left room shall be the starter room (special case).
-                    _dungeonLayout += "r0x0;";
-                    break;
-               case 1:
-                    // The room next over to the bottom left shall be the starter room (special case).
-                    _dungeonLayout += "r1x0;";
-                    break;
-               case 2:
-                    _dungeonLayout += "r2x0;";
-                    break;
-               case 3:
-                    _dungeonLayout += "r3x0;";
-                    break;
-               default:
-                    Debug.LogError($"Something went wrong while choosing the starter room, {randomInt} was out of range.");
-                    break;
-          }*/
-          
-          // Temporary layout testing. This will be replaced with the actual procedural dungeon generator.
-          /*_dungeonLayout = "-10-;" +
-                           "-10-;" +
-                           "-201;" +
-                           "--02";*/
-
-          
           FileHandler.SaveArrayToTXT(_dungeonLayout, _fileName);
-          
           LoadDungeonLayoutFromLayout();
      }
 
@@ -119,7 +87,7 @@ public class RoomPlacementSystem : MonoBehaviour
             for (int j = 0; j < 4; j++)
             {
                 layout[i, j] = '-';
-            }    
+            }
         }
         switch (randomInt)
         {
@@ -291,6 +259,22 @@ public class RoomPlacementSystem : MonoBehaviour
             }
         }
 
+        string debugCheck = "";
+        
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                debugCheck += layout[i, j];
+                if (j >= 3)
+                {
+                    debugCheck += "\n";
+                }
+            }
+        }
+        
+        Debug.Log(debugCheck);
+        
         return layout;
     }
 
@@ -325,6 +309,8 @@ public class RoomPlacementSystem : MonoBehaviour
      {
           //int randomNumber = Random.Range(0, however many rooms of the roomNumber type exists + 1); // Use the Random.Range[int] variant https://docs.unity3d.com/ScriptReference/Random.Range.html
           int randomNumber = 0; // TEMP DEBUGGING VARIABLE
+          _saveHandler.xOffset = offset.x * 11;
+          _saveHandler.yOffset = offset.y * 11;
 
           if (!_specialModifierFlag)
           {
@@ -408,9 +394,7 @@ public class RoomPlacementSystem : MonoBehaviour
                     default:
                          Debug.LogError("Room number was outside the range of allowed types.");
                          break;
-               }    
-               _saveHandler.xOffset = offset.x * 11;
-               _saveHandler.yOffset = offset.y * 11;
+               }
           }
           else
           {
