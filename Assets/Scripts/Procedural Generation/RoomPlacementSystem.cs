@@ -164,7 +164,14 @@ public class RoomPlacementSystem : MonoBehaviour
                 {
                     if (TestForFinishDoor(currentPosition))
                     {
-                        layout[currentPosition.x, currentPosition.y] = '1'; // TODO: Add finish room instead.
+                        if (layout[currentPosition.x, currentPosition.y] == '2')
+                        {
+                            layout[currentPosition.x, currentPosition.y] = ':';
+                        }
+                        else
+                        {
+                            layout[currentPosition.x, currentPosition.y] = '.';
+                        }
                         break;
                     }
 
@@ -202,7 +209,14 @@ public class RoomPlacementSystem : MonoBehaviour
                 {
                     if (TestForFinishDoor(currentPosition))
                     {
-                        layout[currentPosition.x, currentPosition.y] = '1'; // TODO: Add finish room instead.
+                        if (layout[currentPosition.x, currentPosition.y] == '2')
+                        {
+                            layout[currentPosition.x, currentPosition.y] = ':';
+                        }
+                        else
+                        {
+                            layout[currentPosition.x, currentPosition.y] = '.';
+                        }
                         break;
                     }
 
@@ -237,7 +251,14 @@ public class RoomPlacementSystem : MonoBehaviour
                 // Add a room going up.
                 if (TestForFinishDoor(currentPosition))
                 {
-                    layout[currentPosition.x, currentPosition.y] = '1'; // TODO: Add finish room instead.
+                    if (layout[currentPosition.x, currentPosition.y] == '2')
+                    {
+                        layout[currentPosition.x, currentPosition.y] = ':';
+                    }
+                    else
+                    {
+                        layout[currentPosition.x, currentPosition.y] = '.';
+                    }
                     break;
                 }
                 else
@@ -319,22 +340,22 @@ public class RoomPlacementSystem : MonoBehaviour
                     case '0':
                          // Room going Left and Right.
                          
-                         LoadRoomTypeFromFile($"roomLR{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomLR{randomNumber}.json");
                          break;
                     case '1':
                          // Room going Up, Left and Right.
-                         
-                         LoadRoomTypeFromFile($"roomULR{randomNumber}.json"); // Testing file to load.
+
+                         LoadRoomTypeFromFile($"roomULR{randomNumber}.json");
                          break;
                     case '2':
                          // Room going Down, Left and Right.
                          
-                         LoadRoomTypeFromFile($"roomDLR{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomDLR{randomNumber}.json");
                          break;
                     case '3':
                          // Room going up, down, left and right.
                          
-                         LoadRoomTypeFromFile($"roomUDLR{randomNumber}.json"); // Testing file to load.
+                         LoadRoomTypeFromFile($"roomUDLR{randomNumber}.json");
                          Debug.Log("Loaded room type 3.");
                          break;
                     /*case '4':
@@ -378,19 +399,16 @@ public class RoomPlacementSystem : MonoBehaviour
 
                          LoadRoomTypeFromFile($"roomB.json");
                          break;
-                    case '*':
-                         // This denotes a shift from the layout of the rooms to the special modifiers such as start point and end point location.
+                    case '.':
+                         // This is the finish room going left and right.
 
-                         _specialModifierFlag = true;
+                         LoadRoomTypeFromFile($"roomLRF{randomNumber}.json");
                          break;
-                    case ';':
-                         // Shift the y-axis offset up one and reset the x-axis offset.
-
-                         _saveHandler.xOffset = 0;
-                         _saveHandler.yOffset += 11;
-                         
-                         Debug.Log("Shifting the room y-axis offset and resetting the x-axis offset.");
-                         break;
+                    case ':':
+                        // This is the finish room going down, left and right.
+                        
+                        LoadRoomTypeFromFile($"roomDLRF{randomNumber}.json");
+                        break;
                     default:
                          Debug.LogError("Room number was outside the range of allowed types.");
                          break;
