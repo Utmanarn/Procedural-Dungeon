@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rb;
     private PlayerAttack _playerAttack;
     
-    private float _movementSpeed = 1f;
+    private float _movementSpeed = 5f;
     private Vector2 _playerMovementInputNorm;
     private bool _attackInput = false;
 
@@ -42,8 +42,8 @@ public class PlayerController : MonoBehaviour
     private void UpdateMovement()
     {
         if (_playerMovementInputNorm == Vector2.zero) return;
-        _rb.MovePosition(_rb.position + _playerMovementInputNorm * (_movementSpeed * Time.fixedDeltaTime * 5f));
-        _rb.transform.up = _playerMovementInputNorm;
+        _rb.MovePosition(_rb.position + _playerMovementInputNorm * (_movementSpeed * Time.fixedDeltaTime));
+        //_rb.transform.up = _playerMovementInputNorm;
     }
 
     private void PerformAttack()

@@ -3,10 +3,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
 
-public class SaveHandler  : MonoBehaviour
+public class SaveHandlerOld : MonoBehaviour
 {
-    public List<CustomTile> tiles = new List<CustomTile>();
-
     private Dictionary<string, Tilemap> _tilemaps = new Dictionary<string, Tilemap>();
     [SerializeField] private BoundsInt bounds; // Bounds for the rooms default would be pos -5, -5 and size 11, 11.
     [SerializeField] private string fileName;
@@ -39,12 +37,12 @@ public class SaveHandler  : MonoBehaviour
 
     private void OnSave()
     {
-        List<TilemapData> data = new List<TilemapData>();
+        List<OldTilemapData> data = new List<OldTilemapData>();
 
         foreach (KeyValuePair<string, Tilemap> tileMap in _tilemaps)
         {
-            TilemapData mapData = new TilemapData();
-            mapData.mapKey = tileMap.Key;
+            OldTilemapData mapData = new OldTilemapData();
+            mapData.key = tileMap.Key;
 
             for (int x = bounds.xMin; x < bounds.xMax; x++)
             {
@@ -52,13 +50,15 @@ public class SaveHandler  : MonoBehaviour
                 {
                     Vector3Int pos = new Vector3Int(x, y, 0);
                     TileBase tile = tileMap.Value.GetTile(pos);
-                    CustomTile tempTile = tiles.Find(t => t.Tile == tile);
 
-                    if (tempTile)
+                    if (tile)
                     {
-                        TileInfo nTile = new TileInfo(tempTile.ID, x, y);
-
-                        mapData.tiles.Add(nTile);
+                        if (UnityEditor.AssetDatabase.TryGetGUIDAndLocalFileIdentifier(tile, out string guid,
+                                out long localId))
+                        {
+                            OldTileInfo nTile = new OldTileInfo(tile, pos, guid);
+                            mapData.tiles.Add(nTile);
+                        }
                     }
                 }
             }
@@ -66,36 +66,44 @@ public class SaveHandler  : MonoBehaviour
             data.Add(mapData);
         }
 
-        FileHandler.SaveToJSON<TilemapData>(data, fileName);
+        FileHandler.SaveToJSON<OldTilemapData>(data, fileName);
     }
     
     public void OnLoad(string loadFileName)
     {
-        List<TilemapData> data = FileHandler.ReadListFromJSON<TilemapData>(loadFileName);
+        List<OldTilemapData> data = FileHandler.ReadListFromJSON<OldTilemapData>(loadFileName);
 
         foreach (var mapData in data)
         {
-            if (mapData.mapKey == null)
-            { 
-                Debug.LogError("Map Data key missing!");
-                continue;
-            }
-
-            if (!_tilemaps.ContainsKey(mapData.mapKey))
+            if (!_tilemaps.ContainsKey(mapData.key))
             {
-                Debug.LogError("Failed to get tilemap data for " + mapData.mapKey);
+                Debug.LogError("Failed to get tilemap data for " + mapData.key);
                 continue;
             }
 
-            var map = _tilemaps[mapData.mapKey];
+            var map = _tilemaps[mapData.key];
 
             if (mapData.tiles != null && mapData.tiles.Count > 0)
             {
-                foreach (var tile in mapData.tiles)
+                foreach (OldTileInfo tile in mapData.tiles)
                 {
-                    tile.x_pos += xOffset;
-                    tile.y_pos += yOffset;
-                    map.SetTile(new Vector3Int(tile.x_pos, tile.y_pos, 0), tiles.Find(t => t.ID == tile.id).Tile);
+                    TileBase tileBase = tile.tile;
+
+                    if (tileBase == null)
+                    {
+                        Debug.Log("[Loading Tilemap]: InstanceID not found - looking in AssetDatabase");
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(tile.guid);
+                        tileBase = UnityEditor.AssetDatabase.LoadAssetAtPath<TileBase>(path);
+
+                        if (tileBase == null)
+                        {
+                            Debug.LogError("[Loading Tilemap]: Tile not found in AssetDatabase");
+                            continue;
+                        }
+                    }
+
+                    tile.position += new Vector3Int(xOffset, yOffset, 0);
+                    map.SetTile(tile.position, tileBase);
                 }
             }
         }
@@ -103,23 +111,23 @@ public class SaveHandler  : MonoBehaviour
 }
 
 [Serializable]
-public class TilemapData
+public class OldTilemapData
 {
-    public string mapKey;
-    public List<TileInfo> tiles = new List<TileInfo>();
+    public string key;
+    public List<OldTileInfo> tiles = new List<OldTileInfo>();
 }
 
 [Serializable]
-public class TileInfo
+public class OldTileInfo
 {
-    public string id;
-    public int x_pos;
-    public int y_pos;
+    public TileBase tile;
+    public string guid;
+    public Vector3Int position;
 
-    public TileInfo(string id, int x, int y)
+    public OldTileInfo(TileBase tile, Vector3Int pos, string guid)
     {
-        this.id = id;
-        x_pos = x;
-        y_pos = y;
+        this.tile = tile;
+        position = pos;
+        this.guid = guid;
     }
 }

@@ -17,8 +17,8 @@ public class RoomPlacementSystem : MonoBehaviour
 
     private void Awake()
      {
-          _saveHandler = GetComponent<SaveHandler>();
-          AddRoomsToHasSet();
+        _saveHandler = GetComponent<SaveHandler>();
+        AddRoomsToHashSet();
      }
 
      private void Start()
@@ -118,7 +118,7 @@ public class RoomPlacementSystem : MonoBehaviour
         {
             if (safetyCounter > 40)
             {
-                Debug.LogWarning("Loop reached the max number of itterations.");
+                Debug.LogWarning("Loop reached the max number of iterations.");
                 break;
             }
             safetyCounter++;
@@ -309,7 +309,7 @@ public class RoomPlacementSystem : MonoBehaviour
         return false;
     }
 
-     private void AddRoomsToHasSet()
+     private void AddRoomsToHashSet()
      {
           System.String[] files = System.IO.Directory.GetFiles(Application.dataPath + "/Rooms/");
 
