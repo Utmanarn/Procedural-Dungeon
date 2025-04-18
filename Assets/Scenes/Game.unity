@@ -3221,6 +3221,7 @@ GameObject:
   - component: {fileID: 1645214401}
   - component: {fileID: 1645214400}
   - component: {fileID: 1645214402}
+  - component: {fileID: 1645214403}
   m_Layer: 0
   m_Name: Tilemap_Objects
   m_TagString: Untagged
@@ -3404,6 +3405,18 @@ TilemapCollider2D:
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
+--- !u!114 &1645214403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1645214398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea7fa4d406a99294296c3af1b43f1e51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1963537518
 GameObject:
   m_ObjectHideFlags: 0
