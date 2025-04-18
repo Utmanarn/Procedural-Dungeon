@@ -12,6 +12,8 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private bool _specialModifierFlag;
 
+     [SerializeField] private GameObject player;
+
     [Header("Debugging")]
     [SerializeField] private bool testLoadLayouts = false;
 
@@ -49,13 +51,22 @@ public class RoomPlacementSystem : MonoBehaviour
                Debug.LogError("Failed to load dungeon layout, are you sure the layout was saved correctly?");
                return;
           }
-         
-          Debug.Log("Layout is: " + layout);
-          for (int i = 0; i < 4; i++)
+
+          bool hasSpawnedPlayer = false;
+
+          for (int j = 0; j < 4; j++)
           {
-              for (int j = 0; j < 4; j++)
+              for (int i = 0; i < 4; i++)
               {
                   char roomType = layout[i, j];
+
+                  if (roomType != '-' && !hasSpawnedPlayer)
+                  {
+                      // Spawn player
+                      Vector3 playerSpawnOffset = new Vector3(11 * i, 11 * j);
+                      Instantiate(player, playerSpawnOffset, Quaternion.identity);
+                      hasSpawnedPlayer = true;
+                  }
                
                   Debug.Log("roomType = " + roomType + " Offset = " + new Vector2Int(i, j));
                   LoadRoomTypeFromChar(roomType, new Vector2Int(i, j));
