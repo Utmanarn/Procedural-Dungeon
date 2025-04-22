@@ -1,10 +1,11 @@
+using System;
 using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
     [SerializeField] private float attackCooldown = 0.7f;
     [SerializeField] private int damage = 1;
-    [SerializeField] private Transform attackPoint;
+    public Transform attackPoint;
 
     private Collider2D[] _detectedColliders = new Collider2D[] {};
 

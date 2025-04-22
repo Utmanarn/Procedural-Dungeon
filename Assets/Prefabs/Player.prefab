@@ -126,11 +126,12 @@ GameObject:
   - component: {fileID: 1299012223801564066}
   - component: {fileID: 6112036907198282376}
   - component: {fileID: 660261835167492648}
+  - component: {fileID: -7548880446598841042}
   - component: {fileID: 5330742237806976863}
   - component: {fileID: 2706565895677390692}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -180,6 +181,19 @@ MonoBehaviour:
   attackCooldown: 0.7
   damage: 1
   attackPoint: {fileID: 3647649755207422596}
+--- !u!114 &-7548880446598841042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4497014298704934280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03beaea52d1cabd4988432be303d46c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 3
 --- !u!50 &5330742237806976863
 Rigidbody2D:
   serializedVersion: 4

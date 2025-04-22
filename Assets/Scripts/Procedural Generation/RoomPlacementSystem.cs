@@ -13,6 +13,7 @@ public class RoomPlacementSystem : MonoBehaviour
      private bool _specialModifierFlag;
 
      [SerializeField] private GameObject player;
+    [SerializeField] private GameObject enemy;
 
     [Header("Debugging")]
     [SerializeField] private bool testLoadLayouts = false;
@@ -52,7 +53,10 @@ public class RoomPlacementSystem : MonoBehaviour
                return;
           }
 
+          int randEnemyCount = Random.Range(1, 5);
+          int spawnedEnemyCount = 0;
           bool hasSpawnedPlayer = false;
+          bool roomOccupiedByPlayer = false;
 
           for (int j = 0; j < 4; j++)
           {
@@ -66,13 +70,24 @@ public class RoomPlacementSystem : MonoBehaviour
                       Vector3 playerSpawnOffset = new Vector3(11 * i, 11 * j);
                       Instantiate(player, playerSpawnOffset, Quaternion.identity);
                       hasSpawnedPlayer = true;
+                      roomOccupiedByPlayer = true;
                   }
-               
+
+                  if (roomType != '-' && !roomOccupiedByPlayer && randEnemyCount > spawnedEnemyCount)
+                  {
+                      // Spawn enemy
+                      Vector3 enemySpawnOffset = new Vector3(11 * i, 11 * j);
+                      Instantiate(enemy, enemySpawnOffset, Quaternion.identity);
+                      spawnedEnemyCount++;
+                  }
+
                   Debug.Log("roomType = " + roomType + " Offset = " + new Vector2Int(i, j));
                   LoadRoomTypeFromChar(roomType, new Vector2Int(i, j));
+
+                  roomOccupiedByPlayer = false;
               }
           }
-     }
+    }
 
      private void GenerateDungeonLayout()
      {
@@ -322,7 +337,7 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private void AddRoomsToHashSet()
      {
-          System.String[] files = System.IO.Directory.GetFiles(Application.dataPath + "/Rooms/");
+          System.String[] files = System.IO.Directory.GetFiles(Application.streamingAssetsPath + "/Rooms/");
 
           foreach (string name in files)
           {

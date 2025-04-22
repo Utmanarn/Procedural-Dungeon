@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -18,6 +19,13 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         GetInput();
+        UpdateAttackPosition();
+    }
+
+    private void UpdateAttackPosition()
+    {
+        if (_playerMovementInputNorm == Vector2.zero) return;
+        _playerAttack.attackPoint.localPosition = _playerMovementInputNorm;
     }
 
     private void FixedUpdate()

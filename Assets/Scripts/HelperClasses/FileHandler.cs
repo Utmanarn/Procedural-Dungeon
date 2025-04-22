@@ -55,7 +55,7 @@ public static class FileHandler
 
     private static string GetPath(string fileName)
     {
-        return Application.dataPath + "/Rooms/" + fileName;
+        return Application.streamingAssetsPath + "/Rooms/" + fileName;
     }
     
     private static void WriteFile(string path, string content)

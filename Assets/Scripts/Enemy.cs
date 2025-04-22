@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour
     
     [SerializeField] private float targetingDistance = 2f;
     [SerializeField] private float attackDistance = 1.05f;
-    [SerializeField] private float movementSpeed = 1f;
+    [SerializeField] private float movementSpeed = 0.2f;
     [SerializeField] private int damage = 1;
 
     private void Awake()

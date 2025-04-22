@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class HealthSystem : MonoBehaviour
 {
@@ -12,6 +13,12 @@ public class HealthSystem : MonoBehaviour
 
     private void OnDeath()
     {
+        if (gameObject.CompareTag("Player"))
+        {
+            SceneManager.LoadScene("GameOverScene");
+            return;
+        }
+
         Destroy(gameObject); // For now we just destroy the object.
     }
 }
