@@ -12,6 +12,8 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private bool _specialModifierFlag;
 
+    private const int width = 4, height = 4;
+
      [SerializeField] private GameObject player;
     [SerializeField] private GameObject enemy;
 
@@ -26,8 +28,8 @@ public class RoomPlacementSystem : MonoBehaviour
 
      private void Start()
      {
-         _dungeonLayout = new char[4, 4];
-        _fileName = "DungeonLayout.txt";
+         _dungeonLayout = new char[width, height];
+        _fileName = "DungeonLayout.json";
         _specialModifierFlag = false;
         if (testLoadLayouts)
         {
@@ -45,7 +47,7 @@ public class RoomPlacementSystem : MonoBehaviour
                return;
           }
 
-          char[,] layout = FileHandler.ReadArrayFromTXT(_fileName);
+          char[,] layout = FileHandler.Read2DArrayFromTXT(_fileName, width, height);
 
           if (layout == null)
           {
@@ -58,16 +60,16 @@ public class RoomPlacementSystem : MonoBehaviour
           bool hasSpawnedPlayer = false;
           bool roomOccupiedByPlayer = false;
 
-          for (int j = 0; j < 4; j++)
+          for (int y = 0; y < height; y++)
           {
-              for (int i = 0; i < 4; i++)
+              for (int x = 0; x < width; x++)
               {
-                  char roomType = layout[i, j];
+                  char roomType = layout[x, y];
 
                   if (roomType != '-' && !hasSpawnedPlayer)
                   {
                       // Spawn player
-                      Vector3 playerSpawnOffset = new Vector3(11 * i, 11 * j);
+                      Vector3 playerSpawnOffset = new Vector3(11 * x, 11 * y);
                       Instantiate(player, playerSpawnOffset, Quaternion.identity);
                       hasSpawnedPlayer = true;
                       roomOccupiedByPlayer = true;
@@ -76,13 +78,13 @@ public class RoomPlacementSystem : MonoBehaviour
                   if (roomType != '-' && !roomOccupiedByPlayer && randEnemyCount > spawnedEnemyCount)
                   {
                       // Spawn enemy
-                      Vector3 enemySpawnOffset = new Vector3(11 * i, 11 * j);
+                      Vector3 enemySpawnOffset = new Vector3(11 * x, 11 * y);
                       Instantiate(enemy, enemySpawnOffset, Quaternion.identity);
                       spawnedEnemyCount++;
                   }
 
-                  Debug.Log("roomType = " + roomType + " Offset = " + new Vector2Int(i, j));
-                  LoadRoomTypeFromChar(roomType, new Vector2Int(i, j));
+                  Debug.Log("roomType = " + roomType + " Offset = " + new Vector2Int(x, y));
+                  LoadRoomTypeFromChar(roomType, new Vector2Int(x, y));
 
                   roomOccupiedByPlayer = false;
               }
@@ -103,14 +105,14 @@ public class RoomPlacementSystem : MonoBehaviour
         char lastRoomType = '0';
         Vector2Int currentPosition = new Vector2Int(0, 0);
         Vector2Int nextPathLocation = new Vector2Int(0, 0);
-        char[,] layout = new char[4, 4];
+        char[,] layout = new char[width, height];
         // Start out with the starting room area placement and the bottom row of rooms.
         int randomInt = Random.Range(0, 4);
         Debug.Log("Rand int: " + randomInt);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < width; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < height; j++)
             {
                 layout[i, j] = '-';
             }
@@ -149,7 +151,7 @@ public class RoomPlacementSystem : MonoBehaviour
             }
             safetyCounter++;
 
-            if (currentPosition.y >= 4) break; // Change out to figure out when we have gotten to the end.
+            if (currentPosition.y >= height) break; // If we reach a number greater than height on the y axis we know we are done.
 
             if (nextPathLocation == currentPosition && lastRoomType == '1')
             {
@@ -163,7 +165,7 @@ public class RoomPlacementSystem : MonoBehaviour
                     nextPathLocation.x++;
                     currentPosition.x++;
                 }
-                else if (currentPosition.x == 3)
+                else if (currentPosition.x == width - 1)
                 {
                     nextPathLocation.x--;
                     currentPosition.x--;
@@ -231,7 +233,7 @@ public class RoomPlacementSystem : MonoBehaviour
             }
             else if (randomInt == 2 || randomInt == 3)
             {
-                if (currentPosition.x == 3) // If the room is on the rightmost row and tries to go right we go up instead.
+                if (currentPosition.x == width - 1) // If the room is on the rightmost row and tries to go right we go up instead.
                 {
                     if (TestForFinishDoor(currentPosition))
                     {
@@ -308,12 +310,12 @@ public class RoomPlacementSystem : MonoBehaviour
 
         string debugCheck = "";
         
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < height; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < width; j++)
             {
-                debugCheck += layout[i, j];
-                if (j >= 3)
+                debugCheck += layout[j, i];
+                if (j >= width - 1)
                 {
                     debugCheck += "\n";
                 }
@@ -328,7 +330,7 @@ public class RoomPlacementSystem : MonoBehaviour
     private bool TestForFinishDoor(Vector2 pos)
     {
         // TODO: This will check if we are at the top row of the layout string and if so we want to add the finish room instead of adding a room that goes up.
-        if (pos.y == 3)
+        if (pos.y == height - 1)
         {
             return true;
         }

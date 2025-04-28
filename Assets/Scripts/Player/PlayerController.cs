@@ -49,6 +49,8 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateMovement()
     {
+        _rb.velocity = Vector3.zero;
+
         if (_playerMovementInputNorm == Vector2.zero) return;
         _rb.MovePosition(_rb.position + _playerMovementInputNorm * (_movementSpeed * Time.fixedDeltaTime));
         //_rb.transform.up = _playerMovementInputNorm;

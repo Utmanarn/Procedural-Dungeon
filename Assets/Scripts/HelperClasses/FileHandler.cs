@@ -48,9 +48,9 @@ public static class FileHandler
         return ReadFile(GetPath(fileName));
     }
     
-    public static char[,] ReadArrayFromTXT(string fileName)
+    public static char[,] Read2DArrayFromTXT(string fileName, int arraySizeX, int arraySizeY)
     {
-        return ReadFileArray(GetPath(fileName));
+        return ReadFile2DArray(GetPath(fileName), arraySizeX, arraySizeY);
     }
 
     private static string GetPath(string fileName)
@@ -78,9 +78,9 @@ public static class FileHandler
 
         string content = "";
         
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < array.GetLength(1); i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < array.GetLength(0); j++)
             {
                 content += array[i, j].ToString();
             }
@@ -106,17 +106,17 @@ public static class FileHandler
         return "";
     }
     
-    private static char[,] ReadFileArray(string path)
+    private static char[,] ReadFile2DArray(string path, int arraySizeX, int arraySizeY)
     {
         if (File.Exists(path))
         {
             using (StreamReader reader = new StreamReader(path))
             {
                 string content = reader.ReadToEnd();
-                char[,] array = new char[4,4];
-                for (int i = 0; i < 4; i++)
+                char[,] array = new char[arraySizeX,arraySizeY];
+                for (int i = 0; i < arraySizeY; i++)
                 {
-                    for (int j = 0; j < 4; j++)
+                    for (int j = 0; j < arraySizeX; j++)
                     {
                         array[i, j] = content[i * 4 + j];
                     }
