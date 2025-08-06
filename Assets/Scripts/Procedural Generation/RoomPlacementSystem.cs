@@ -15,7 +15,7 @@ public class RoomPlacementSystem : MonoBehaviour
     private const int width = 4, height = 4;
 
      [SerializeField] private GameObject player;
-    [SerializeField] private GameObject enemy;
+    [SerializeField] private List<GameObject> enemies;
 
     [Header("Debugging")]
     [SerializeField] private bool testLoadLayouts = false;
@@ -57,6 +57,7 @@ public class RoomPlacementSystem : MonoBehaviour
 
           int randEnemyCount = Random.Range(1, 5);
           int spawnedEnemyCount = 0;
+          int randomEnemyUnit = 0;
           bool hasSpawnedPlayer = false;
           bool roomOccupiedByPlayer = false;
 
@@ -79,7 +80,9 @@ public class RoomPlacementSystem : MonoBehaviour
                   {
                       // Spawn enemy
                       Vector3 enemySpawnOffset = new Vector3(11 * x, 11 * y);
-                      Instantiate(enemy, enemySpawnOffset, Quaternion.identity);
+                      randomEnemyUnit = Random.Range(0, 3);
+
+                      Instantiate(enemies[randomEnemyUnit], enemySpawnOffset, Quaternion.identity);
                       spawnedEnemyCount++;
                   }
 

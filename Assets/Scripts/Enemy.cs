@@ -51,6 +51,7 @@ public class Enemy : MonoBehaviour
         if (_targetInAttackRange) AttackTarget();
     }
 
+    // A very quick and dirty way of checking target ranges.
     private void CheckForTargets()
     {
         float distance = Vector2.Distance(transform.position, _target.position);
