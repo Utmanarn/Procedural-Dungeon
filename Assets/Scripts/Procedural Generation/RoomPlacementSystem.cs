@@ -55,7 +55,8 @@ public class RoomPlacementSystem : MonoBehaviour
                return;
           }
 
-          int randEnemyCount = Random.Range(1, 5);
+          int randEnemyCount = Random.Range(1, 8);
+          int randomSpawnChance = Random.Range(1, 4);
           int spawnedEnemyCount = 0;
           int randomEnemyUnit = 0;
           bool hasSpawnedPlayer = false;
@@ -76,7 +77,7 @@ public class RoomPlacementSystem : MonoBehaviour
                       roomOccupiedByPlayer = true;
                   }
 
-                  if (roomType != '-' && !roomOccupiedByPlayer && randEnemyCount > spawnedEnemyCount)
+                  if (roomType != '-' && !roomOccupiedByPlayer && randEnemyCount > spawnedEnemyCount && randomSpawnChance < 3)
                   {
                       // Spawn enemy
                       Vector3 enemySpawnOffset = new Vector3(11 * x, 11 * y);
@@ -89,6 +90,7 @@ public class RoomPlacementSystem : MonoBehaviour
                   Debug.Log("roomType = " + roomType + " Offset = " + new Vector2Int(x, y));
                   LoadRoomTypeFromChar(roomType, new Vector2Int(x, y));
 
+                  randomSpawnChance = Random.Range(1, 4);
                   roomOccupiedByPlayer = false;
               }
           }
